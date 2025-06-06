@@ -7,6 +7,7 @@ from datetime import datetime
 import spacy.cli
 from spacy.util import is_package
 import subprocess
+from sentence_transformers import SentenceTransformer, util
 
 # Check if the spaCy language model "en_core_web_sm" is installed
 # If not, download it using subprocess to run the command-line installer
@@ -225,8 +226,22 @@ class ResumeParser:
                                     break
         return experience
     
+    def extract_relevant_experience(self,resume_experience,jd_experience):
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        relevant_experience = []
+        for i in resume_experience:
 
-    def parse(self):
+            job_title= i['job_title']
+
+            if jd_experience[1] is not None:
+                score = util.cos_sim(model.encode(job_title), model.encode(jd_experience[1]))
+
+            if score[0][0] > 0.5:
+                relevant_experience.append(i)
+
+        return relevant_experience
+
+    def parse(self,jd_experience):
         """
         Orchestrates the extraction of key resume information including:
         name, email, phone number, skills, education, and work experience.
@@ -242,6 +257,7 @@ class ResumeParser:
         email = self.extract_emails_from_resume ()
         phone_number = self.extract_phone_number_from_resume()
         experience = self.extract_all_experience_entries()
+        relevant_experience = self.extract_relevant_experience(experience,jd_experience)
 
         # Return a structured dictionary with all extracted fields
         return {
@@ -252,6 +268,8 @@ class ResumeParser:
             "education": [
                 {"degree": deg} for deg in degrees
             ],
-            "experience": experience
+            "experience": experience,
+            "relevant_experience" : relevant_experience,
+            "resume_text" : self.text
         }
 
