@@ -12,7 +12,7 @@ import os
 
 
 app = Flask(__name__)
-CORS(app)  # Allow requests from React
+CORS(app, origins=["https://fitmyresume.netlify.app"])  # Allow requests from React
 
 def extract_text_from_pdf(file_stream):
   # Open the PDF file from a binary stream using PyMuPDF (fitz)
