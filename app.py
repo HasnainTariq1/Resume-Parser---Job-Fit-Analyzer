@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from src.resume_parser import ResumeParser
 from src.jd_parser import JobDescriptionParser
 from src.similarity_match import SimilarityMatch
@@ -27,6 +27,7 @@ def extract_text_from_pdf(file_stream):
 
 
 @app.route('/api/match', methods=['POST'])
+@cross_origin()
 def match():
 
   """
@@ -95,6 +96,7 @@ def match():
 
 
 @app.route('/api/match_llm', methods=['POST'])
+@cross_origin()
 def match_using_llm():
   """
     API endpoint to match resumes against a job description using an LLM (Large Language Model).
