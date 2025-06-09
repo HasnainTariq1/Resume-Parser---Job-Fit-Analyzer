@@ -8,11 +8,10 @@ class SimilarityMatch:
     
     def similarity_check_in_resume_and_job_desc(self):
         model = SentenceTransformer('all-MiniLM-L6-v2')
-        # print(self.resume_details)
-        # print(self.job_desc_details)
+      
         # Combine relevant experience entries into one string
         relevant_experience_entries = self.resume_details.get("relevant_experience", [])
-        print(relevant_experience_entries)
+        # print(relevant_experience_entries)
 
         # Extract job titles and maybe companies
         experience_text = " ".join([
@@ -36,6 +35,7 @@ class SimilarityMatch:
                 model.encode(self.job_desc_details.get("job_description"), convert_to_tensor=True)
             ).item()
         }
+        # print(scores)
 
         final_score = 0.5 * scores["skills"] + 0.3 * scores["experience"]  + 0.2 * scores["overall"]
 

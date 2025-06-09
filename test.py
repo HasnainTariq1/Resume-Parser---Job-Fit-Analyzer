@@ -1,6 +1,7 @@
 from src.resume_parser import ResumeParser
 from src.jd_parser import JobDescriptionParser
 from src.similarity_match import SimilarityMatch
+from src.llm_matcher import score_resume_with_llm
 # Extract the text from resumes in PDF form
 import fitz, pprint
 
@@ -12,7 +13,7 @@ def extract_text_from_pdf(path):
 
   return text
 
-resume_text = extract_text_from_pdf("data/2.pdf")
+resume_text = extract_text_from_pdf("data/4.pdf")
 
 
 
@@ -61,10 +62,14 @@ Knowledge of data security and compliance best practices.
 Familiarity with machine learning pipelines or big data tools (EMR, Hadoop).
 
 """
-job_description_details = JobDescriptionParser(description).parse_jd_data()
-resume_details = ResumeParser(resume_text).parse(job_description_details['experience_required'])
-resume_similarity_score = SimilarityMatch(resume_details,job_description_details).similarity_check_in_resume_and_job_desc()
+# job_description_details = JobDescriptionParser(description).parse_jd_data()
+# resume_details = ResumeParser(resume_text).parse(job_description_details['experience_required'])
+# resume_similarity_score = SimilarityMatch(resume_details,job_description_details).similarity_check_in_resume_and_job_desc()
 
-pprint.pprint(job_description_details)
-pprint.pprint(resume_details)
-print(resume_similarity_score)
+llm_score = score_resume_with_llm(description, resume_text)
+
+print(llm_score)
+
+# pprint.pprint(job_description_details)
+# pprint.pprint(resume_details)
+# print(resume_similarity_score)

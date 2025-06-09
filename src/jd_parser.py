@@ -82,12 +82,18 @@ class JobDescriptionParser:
 
         # Extract experience information from the job description using a helper method
         jd_experience = self.extract_experience_from_jd()
-        
+        if not jd_experience:
+            experience_required= ['No','experience']
+        else :
+            if len(jd_experience[0])>=3:
+                # Format the extracted experience into a readable string (e.g., "3 years") and include the context or source
+                experience_required= [(str(jd_experience[0][0])+" "+str(jd_experience[0][1])), jd_experience[0][2]]
+
+        # print(experience_required)
+
         return {
             'job_title':job_title,
-
-            # Format the extracted experience into a readable string (e.g., "3 years") and include the context or source
-            'experience_required' : [(str(jd_experience[0][0])+" "+str(jd_experience[0][1])), jd_experience[0][2]],
+            'experience_required' : experience_required,
 
             # Extract relevant skills from the job description text using ResumeParser
             'required_skills' : ResumeParser(self.jd_text).extract_skills_from_resume(),
