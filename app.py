@@ -26,7 +26,7 @@ def extract_text_from_pdf(file_stream):
   return text
 
 
-@app.route('/api/match_llm', methods=['POST'])
+@app.route('/api/match', methods=['POST'])
 @cross_origin()
 def match():
 
@@ -95,7 +95,7 @@ def match():
 
 
 
-@app.route('/api/match', methods=['POST'])
+@app.route('/api/match_llm', methods=['POST'])
 @cross_origin()
 def match_using_llm():
   """
