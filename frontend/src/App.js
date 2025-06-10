@@ -35,8 +35,10 @@ function App() {
 
     try {
       const endpoint = useLLM
-      ? 'http://localhost:5000/api/match_llm'
-      : 'http://localhost:5000/api/match';
+      ? 'https://resume-parser-backend-production.up.railway.app/api/match_llm'
+      : 'https://resume-parser-backend-production.up.railway.app/api/match';
+      // 'http://127.0.0.1:5000/api/match_llm'
+      // : 'http://127.0.0.1:5000/api/match';
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -71,7 +73,7 @@ function App() {
     });
 
     try {
-      const response = await fetch('http://localhost:5000/api/download-top', {
+      const response = await fetch('https://resume-parser-backend-production.up.railway.app/api/download-top', {
         method: 'POST',
         body: formData
       });

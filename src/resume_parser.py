@@ -2,7 +2,6 @@ import spacy
 from spacy.matcher import PhraseMatcher
 import re
 import json
-import re
 from datetime import datetime
 import spacy.cli
 from spacy.util import is_package
