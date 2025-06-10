@@ -43,9 +43,11 @@ def match():
             - similarity score (rounded)
         - Only resumes with a similarity score >= 0.5 are included.
   """
+  print("in match function")
   # Get the uploaded resume files from the request (multiple files allowed)
   resume_files = request.files.getlist("resumes")
 
+  print("Job description received.")
   # Get the job description text from the form data
   job_text = request.form.get("job", "")
 
@@ -64,6 +66,7 @@ def match():
   results = []
   # Iterate over each uploaded file
   for file in resume_files:
+    print(f"Processing file: {file.filename}")
     # Skip files that are not PDFs    
     if not file.filename.endswith('.pdf'):
       continue 
@@ -72,6 +75,7 @@ def match():
       # Extract raw text from the PDF resume
       resume_text = extract_text_from_pdf(file)
 
+      print(f"Extracted resume text length: {len(resume_text)}")
       # Parse the extracted resume text using ResumeParser
       resume_parsed = ResumeParser(resume_text).parse(job_text['experience_required'])
       print("Parsed resume:", resume_parsed)
