@@ -77,7 +77,8 @@ def match():
 
       print(f"Extracted resume text length: {len(resume_text)}")
       # Parse the extracted resume text using ResumeParser
-      resume_parsed = ResumeParser(resume_text).parse(job_text['experience_required'])
+      # resume_parsed = ResumeParser(resume_text).parse(job_text['experience_required'])
+      resume_parsed = "Hello"
       print("Parsed resume:", resume_parsed)
 
       print("Calculating similarity for:", file.filename)
