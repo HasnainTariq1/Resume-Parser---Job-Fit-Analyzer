@@ -13,7 +13,7 @@ import os
 
 app = Flask(__name__)
 CORS(app, origins=["https://fitmyresume.netlify.app"], supports_credentials=True) # Allow requests from React
-
+# CORS(app)
 def extract_text_from_pdf(file_stream):
   # Open the PDF file from a binary stream using PyMuPDF (fitz)
   doc = fitz.open(stream=file_stream.read(), filetype="pdf")
@@ -49,6 +49,7 @@ def match():
   # Get the job description text from the form data
   job_text = request.form.get("job", "")
 
+  
   # If either resumes or job description is missing, return an error response
   if not resume_files or not job_text:
       return jsonify({'error': 'Missing file or job description'}), 400
@@ -56,6 +57,9 @@ def match():
 
   # Parse the job description using JobDescriptionParser
   job_text = JobDescriptionParser(job_text).parse_jd_data()
+
+  if 'experience_required' not in job_text:
+    return jsonify({'error': 'Job description parsing failed'}), 500
 
   results = []
   # Iterate over each uploaded file
@@ -70,9 +74,12 @@ def match():
 
       # Parse the extracted resume text using ResumeParser
       resume_parsed = ResumeParser(resume_text).parse(job_text['experience_required'])
+      print("Parsed resume:", resume_parsed)
 
+      print("Calculating similarity for:", file.filename)
       # Calculate similarity score between parsed resume and job description
       score = SimilarityMatch(resume_parsed, job_text).similarity_check_in_resume_and_job_desc()
+      print("Score for", file.filename, ":", score)
 
       # If the similarity score is above threshold (e.g., 0.5), add it to the results
       if score>=0.5:
@@ -202,6 +209,6 @@ def download_top_resumes():
 
 
 if __name__ == '__main__':
-    # app.run(debug=True)
-    port = int(os.environ.get("PORT", 4000))  # Use PORT env var or default to 5000
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
+    # port = int(os.environ.get("PORT", 4000))  # Use PORT env var or default to 5000
+    # app.run(host="0.0.0.0", port=port)
