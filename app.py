@@ -12,7 +12,7 @@ import os
 
 
 app = Flask(__name__)
-CORS(app, origins=["https://fitmyresume.netlify.app"])  # Allow requests from React
+CORS(app, origins=["https://fitmyresume.netlify.app"], supports_credentials=True) # Allow requests from React
 
 def extract_text_from_pdf(file_stream):
   # Open the PDF file from a binary stream using PyMuPDF (fitz)
@@ -27,7 +27,6 @@ def extract_text_from_pdf(file_stream):
 
 
 @app.route('/api/match', methods=['POST'])
-@cross_origin()
 def match():
 
   """
@@ -96,7 +95,6 @@ def match():
 
 
 @app.route('/api/match_llm', methods=['POST'])
-@cross_origin()
 def match_using_llm():
   """
     API endpoint to match resumes against a job description using an LLM (Large Language Model).
