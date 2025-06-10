@@ -5,6 +5,7 @@ from src.jd_parser import JobDescriptionParser
 from src.similarity_match import SimilarityMatch
 from zipfile import ZipFile
 import json
+import uvicorn
 from io import BytesIO
 from src.llm_matcher import score_resume_with_llm
 import fitz, pprint
@@ -214,5 +215,6 @@ def download_top_resumes():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
     # port = int(os.environ.get("PORT", 4000))  # Use PORT env var or default to 5000
     # app.run(host="0.0.0.0", port=port)
