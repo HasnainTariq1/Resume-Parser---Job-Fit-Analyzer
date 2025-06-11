@@ -35,10 +35,10 @@ function App() {
 
     try {
       const endpoint = useLLM
-      ? 'https://resume-parser-backend-production.up.railway.app/api/match_llm'
-      : 'https://resume-parser-backend-production.up.railway.app/api/match';
-      // 'http://127.0.0.1:5000/api/match_llm'
-      // : 'http://127.0.0.1:5000/api/match';
+      // ? 'https://resume-parser-backend-production.up.railway.app/api/match_llm'
+      // : 'https://resume-parser-backend-production.up.railway.app/api/match';
+      ? 'https://16.171.230.184:8080/api/match_llm'
+      : 'https://16.171.230.184:8080/api/match';
       
       const response = await fetch(endpoint, {
         method: 'POST',
