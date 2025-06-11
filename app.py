@@ -211,6 +211,10 @@ def download_top_resumes():
   # Return the in-memory ZIP file as a downloadable attachmen
   return send_file(memory_file, download_name='top_candidates.zip', as_attachment=True)
 
+@app.route('/health')
+def health():
+    return "OK", 200
+
 
 
 if __name__ == '__main__':
