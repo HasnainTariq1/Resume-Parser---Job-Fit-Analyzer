@@ -1,4 +1,4 @@
-# Smart Resume Parser & Job Matcher
+# Resume Parser & Job Fit Analyzer
 
 An intelligent NLP-powered tool to automate resume screening and job matching for HR professionals and recruiters. Built using Python, spaCy, sentence-transformers, React.js, and Flask, this system parses resumes, extracts key details, compares them with job descriptions, and calculates semantic similarity scores — with optional LLM integration for enhanced accuracy. The system supports both traditional ML matching and GPT-based LLM matching via OpenAI API.
 
