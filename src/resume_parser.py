@@ -7,6 +7,7 @@ import spacy.cli
 from spacy.util import is_package
 import subprocess
 from sentence_transformers import SentenceTransformer, util
+import os
 
 # Check if the spaCy language model "en_core_web_sm" is installed
 # If not, download it using subprocess to run the command-line installer
@@ -19,10 +20,17 @@ if not is_package("en_core_web_sm"):
 # Load the spaCy English language model
 nlp = spacy.load("en_core_web_sm")
 
+# This will work regardless of where the function is running from
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, '..', 'data', 'skill_patterns.jsonl')
+
+with open(file_path, 'r', encoding='utf8') as f:
+    patterns = [json.loads(line)['pattern'] for line in f]
+
 # Load skill patterns from a JSONL file
 # Each line in the file is a JSON object with a "pattern" key
-with open('data/skill_patterns.jsonl', 'r', encoding = 'utf8') as f:
-    patterns = [json.loads(line)['pattern'] for line in f]
+# with open('datafiles/skill_patterns.jsonl', 'r', encoding = 'utf8') as f:
+#     patterns = [json.loads(line)['pattern'] for line in f]
 
 # Initialize PhraseMatcher to match skills based on text patterns
 # attr="LOWER" ensures case-insensitive matching

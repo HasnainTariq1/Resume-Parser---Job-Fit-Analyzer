@@ -5,12 +5,19 @@ function App() {
   const [resumeFiles, setResumeFiles] = useState([]);  // <-- updated
   const [job, setJob] = useState('');
   const [results, setResults] = useState([]); // <-- updated
+  const [lessScore, setLessScore] = useState([]); // <-- updated
   const [loading, setLoading] = useState(false);
   const [useLLM, setUseLLM] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [downloadLoading, setDownloadLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (resumeFiles.length > 5) {
+      alert('You can only upload up to 5 resumes.');
+      return;
+    }
 
     if (resumeFiles.length === 0 || !job) {
       alert('Please upload at least one resume and enter job description.');
@@ -35,10 +42,10 @@ function App() {
 
     try {
       const endpoint = useLLM
-      // ? 'https://resume-parser-backend-production.up.railway.app/api/match_llm'
-      // : 'https://resume-parser-backend-production.up.railway.app/api/match';
-      ? 'https://16.171.230.184:8080/api/match_llm'
-      : 'https://16.171.230.184:8080/api/match';
+      ? 'https://resume-parser-api-814653256117.us-central1.run.app/api/match_llm'
+      : 'https://resume-parser-api-814653256117.us-central1.run.app/api/match';
+      // ? 'http://localhost:5000/api/match_llm'
+      // : 'http://localhost:5000/api/match';
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -48,6 +55,7 @@ function App() {
       const data = await response.json();
       console.log("Backend response:", data);
       setResults(data.results); // assume array of matches
+      setLessScore(data.lessScore); // assume array of matches
     } catch (error) {
       alert('Error uploading. Make sure Flask API is running.');
       console.error(error);
@@ -57,6 +65,7 @@ function App() {
   };
   
   const handleDownloadTopResumes = async () => {
+    setDownloadLoading(true);
     const formData = new FormData();
 
     
@@ -73,7 +82,7 @@ function App() {
     });
 
     try {
-      const response = await fetch('https://resume-parser-backend-production.up.railway.app/api/download-top', {
+      const response = await fetch('https://resume-parser-api-814653256117.us-central1.run.app/api/download-top', {
         method: 'POST',
         body: formData
       });
@@ -88,6 +97,9 @@ function App() {
     } catch (err) {
       console.error('Download failed:', err);
       alert('Download failed. See console for details.');
+    }finally {
+
+    setDownloadLoading(false);
     }
   };
 
@@ -108,7 +120,15 @@ function App() {
               type="file"
               accept=".pdf"
               multiple
-              onChange={(e) => setResumeFiles(Array.from(e.target.files))}
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files);
+                if (selectedFiles.length > 5) {
+                  alert('You can upload a maximum of 5 resumes at once.');
+                  e.target.value = null;
+                  return;
+                }
+                setResumeFiles(selectedFiles);
+              }}
               className="file-input"
             />
           </label>
@@ -158,9 +178,25 @@ function App() {
               ))}
               
             </ul>
-            <button onClick={handleDownloadTopResumes} className="submit-btn2">
-                    📦 Download Top Resumes
+            <button onClick={handleDownloadTopResumes} className="submit-btn2" disabled={downloadLoading}>
+                    {downloadLoading ? '⬇️ Downloading...' : '📦 Download Top Resumes'}
             </button>
+          </div>
+        )}
+
+        {Array.isArray(lessScore) && lessScore.length > 0 && (
+          <div className="results-section">
+            <h3>Resumes with Low Match Score</h3>
+            <ul>
+              {lessScore.map((res2, index2) => (
+                <li key={index2}>
+                  <strong>{res2.candidateName}</strong>- {res2.filename} 
+                  {/* <strong>{res.candidateName}</strong>- {res.filename} - Match Score: {res.score}% */}
+                </li>
+                
+              ))}
+              
+            </ul>
           </div>
         )}
 

@@ -5,16 +5,16 @@ from src.jd_parser import JobDescriptionParser
 from src.similarity_match import SimilarityMatch
 from zipfile import ZipFile
 import json
-import uvicorn
 from io import BytesIO
 from src.llm_matcher import score_resume_with_llm
-import fitz, pprint
-import os
-
+import fitz
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-CORS(app, origins=["https://fitmyresume.netlify.app"], supports_credentials=True) # Allow requests from React
-# CORS(app)
+CORS(app, origins=["https://fitmyresume.netlify.app", "http://localhost:3000"], supports_credentials=True)
+
+
 def extract_text_from_pdf(file_stream):
   # Open the PDF file from a binary stream using PyMuPDF (fitz)
   doc = fitz.open(stream=file_stream.read(), filetype="pdf")
@@ -25,6 +25,12 @@ def extract_text_from_pdf(file_stream):
     # Extract text from the current page and append it to the text variable
     text += page.get_text()
   return text
+
+
+@app.route('/')
+def index():
+    app.logger.info("Hit the index route")
+    return "Hello from Flask!"
 
 
 @app.route('/api/match', methods=['POST'])
@@ -44,7 +50,7 @@ def match():
             - similarity score (rounded)
         - Only resumes with a similarity score >= 0.5 are included.
   """
-  print("in match function")
+  # print("in match function")
   # Get the uploaded resume files from the request (multiple files allowed)
   resume_files = request.files.getlist("resumes")
 
@@ -65,9 +71,10 @@ def match():
     return jsonify({'error': 'Job description parsing failed'}), 500
 
   results = []
+  lessScore = []
   # Iterate over each uploaded file
   for file in resume_files:
-    print(f"Processing file: {file.filename}")
+    # print(f"Processing file: {file.filename}")
     # Skip files that are not PDFs    
     if not file.filename.endswith('.pdf'):
       continue 
@@ -76,19 +83,26 @@ def match():
       # Extract raw text from the PDF resume
       resume_text = extract_text_from_pdf(file)
 
-      print(f"Extracted resume text length: {len(resume_text)}")
+      # print(f"Extracted resume text length: {len(resume_text)}")
       # Parse the extracted resume text using ResumeParser
       resume_parsed = ResumeParser(resume_text).parse(job_text['experience_required'])
-      print("Parsed resume:", resume_parsed)
+      # print("Parsed resume:", resume_parsed)
 
-      print("Calculating similarity for:", file.filename)
+      # print("Calculating similarity for:", file.filename)
       # Calculate similarity score between parsed resume and job description
       score = SimilarityMatch(resume_parsed, job_text).similarity_check_in_resume_and_job_desc()
-      print("Score for", file.filename, ":", score)
+      # print("Score for", file.filename, ":", score)
 
       # If the similarity score is above threshold (e.g., 0.5), add it to the results
       if score>=0.5:
         results.append({
+          "filename": file.filename,
+          "candidateName": resume_parsed['name'],
+          "score": round(score, 2)
+        })
+
+      if score < 0.5:
+        lessScore.append({
           "filename": file.filename,
           "candidateName": resume_parsed['name'],
           "score": round(score, 2)
@@ -99,9 +113,11 @@ def match():
 
   # Sort results in descending order based on similarity score    
   results = sorted(results, key=lambda x: x['score'], reverse=True)
+  lessScore = sorted(lessScore, key=lambda x: x['score'], reverse=True)
   
   # Return the results as a JSON response
-  return jsonify({"results": results})
+  return jsonify({"results": results,
+                  "lessScore": lessScore})
   
 
 
@@ -134,8 +150,9 @@ def match_using_llm():
     return jsonify({'error': 'Missing file or job description'}), 400
 
 
+  
   results = []
-
+  lessScore = []
   # Process each uploaded resume file
   for file in resume_files:
     # Skip files that are not PDFs    
@@ -164,14 +181,22 @@ def match_using_llm():
           "score": round(score,2)
         })
 
+      if score < 0.5:
+        lessScore.append({
+          "filename": file.filename,
+          "candidateName":  responseScore['Candidate Name'],
+          "score": round(score, 2)
+        })
+
     except Exception as e:
       print(f"Error processing {file.filename}: {e}")
 
   # Sort the results by score in descending order
   results = sorted(results, key=lambda x: x['score'], reverse=True)
-
+  lessScore = sorted(lessScore, key=lambda x: x['score'], reverse=True)
   # Return the results as a JSON response
-  return jsonify({"results": results})
+  return jsonify({"results": results,
+                  "lessScore": lessScore})
 
 
 
@@ -215,11 +240,25 @@ def download_top_resumes():
 def health():
     return "OK", 200
 
+@app.before_request
+def log_request_info():
+    app.logger.info(f"Incoming request: {request.method} {request.path}")
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.exception("Unhandled Exception: %s", e)
+    return "Internal Server Error", 500
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # No Content
 
 
 if __name__ == '__main__':
-  app.run(host="0.0.0.0", port=8080, debug=True)
-    # app.run(debug=True)
-    # uvicorn.run(app, host="0.0.0.0", port=8080)
-    # port = int(os.environ.get("PORT", 4000))  # Use PORT env var or default to 5000
-    # app.run(host="0.0.0.0", port=port)
+    # port = int(os.environ.get("PORT", 8080))  # Use PORT from env if available
+    # app.run(host="0.0.0.0", port=port, debug=True)
+
+  app.run(debug=True)
+ 
